@@ -1,9 +1,6 @@
 package utils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by Liyanzhen on 2016/12/6.
@@ -13,17 +10,30 @@ public class MathTest {
         double r = Math.pow(2,3);
         MyPrint.print("测试指数求法","" + r);
 
-
-
-        Map<String,List<Integer>> differGenesExpData = new HashMap<>();
-
-        List<Integer> list = new ArrayList<>();
-        for(int i=0;i< 10;i++){
-            list.add(i);
+        double [] d1 = {2.5,2.55,5,5,4,4};
+        double[] d2 = {1.2,1.3,1.3,1.32,1.4,1.42};
+        double sum1=0.0d;
+        double sum2=0.0d;
+        double mm=0.0d;
+        for(int i=0;i < 6;i=i+2){
+            sum1 +=d1[i] * d1[i];
+            sum2 +=d2[i] * d2[i];
+            mm +=d1[i] *d2[i];
         }
 
-        differGenesExpData.put("GmaAffx",list);
+        double cos1 = mm/(Math.sqrt(sum1) * Math.sqrt(sum2));
 
-        System.out.println(differGenesExpData.get("GmaAffx"));
+        sum1=0.0d;
+        sum2=0.0d;
+        mm=0.0d;
+        for(int i=0;i < 6;i=i+1){
+            sum1 +=d1[i] * d1[i];
+            sum2 +=d2[i] * d2[i];
+            mm +=d1[i] *d2[i];
+        }
+
+        double cos2 = mm/(Math.sqrt(sum1) * Math.sqrt(sum2));
+
+        MyPrint.print("1:"+cos1,"\t 2 :"+cos2);
     }
 }

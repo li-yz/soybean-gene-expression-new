@@ -29,6 +29,7 @@ public class GetDifferExpGenesDataMatrix {
         obj.startReadNormalizationData(differExpGenes,differGenesExpData,differExpDataTableHeader);
         MyPrint.print("构造差异表达基因数据 完成","行数："+differGenesExpData.size() +" 列数："+differExpDataTableHeader.size());
 
+
         //把构造出来的 差异表达基因数据 矩阵 保存到二进制文件中，用的时候可以直接读取到内存中（以二进制流形式，无需处理数据的格式）
 
     }
@@ -82,10 +83,12 @@ public class GetDifferExpGenesDataMatrix {
         }
     }
 
+
+
     public void readDifferGenes(Set<String> differExpGenes){
-        String path ="";
+        String path ="D:\\paperdata\\soybean\\differExpressionGenes\\all_differ_exp_genes.txt";
         try{
-            File file = new File("D:\\paperdata\\soybean\\differExpressionGenes\\all_differ_exp_genes.txt");
+            File file = new File(path);
             BufferedReader br = new BufferedReader(new FileReader(file));
             String line = "";
             while((line = br.readLine()) != null){
