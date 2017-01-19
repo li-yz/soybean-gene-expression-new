@@ -28,32 +28,35 @@ public class CalculateCosDistanceAndOutputEdges {
         Map<String,List<Double>> differGenesExpData = new HashMap<>();//用来保存  “基因Id”---表达数据 数据表
         List<String> differExpDataTableHeader = new ArrayList<>();//用来保存数据表的 表头信息，即每一列 对应的是哪个实验条件，方便后续解释实验结果
         getDifferExpGenesDataMatrix.startReadNormalizationData(differExpGenes,differGenesExpData,differExpDataTableHeader);
-        MyPrint.print("构造差异表达基因数据 完成","行数："+differGenesExpData.size() +" 列数："+differExpDataTableHeader.size());
 
 
         CalculateCosDistanceAndOutputEdges obj = new CalculateCosDistanceAndOutputEdges();
         obj.outPutDifferExpData(differGenesExpData,differExpDataTableHeader);
         MyPrint.print("输出差异表达基因数据到文件，完成！！！");
-        obj.calculateCosDistanceAndConstructNetwork(differGenesExpData);
+        String [] rowGeneIds = new String[differGenesExpData.size()];
+        double[][]cosDistance = obj.calculateCosDistanceAndConstructNetwork(differGenesExpData,rowGeneIds);
 
+        //释放引用，让GC能回收此内存区域。
+        differGenesExpData = null;
+
+        obj.findAndOutPutEdges(cosDistance,rowGeneIds);
     }
-
 
 
     /**
      * 计算余弦相似度 矩阵
+     * @param differGenesExpData 传进来的是未取多个replications均值的数据。
+     * 为了计算的准确性，同时降低维度，应该先做convert，取每个小实验条件的均值作为一个列，  同时由于不同的GSE系列中 相同的replications分布规律不同，convert方法应该针对每一个实验条件特写
      */
-    public void calculateCosDistanceAndConstructNetwork(Map<String,List<Double>> differGenesExpData){
+    public double[][] calculateCosDistanceAndConstructNetwork(Map<String,List<Double>> differGenesExpData,String [] rowGeneIds){
         //先把 Map 结构的数据转换成 二维数组
         int columNum = 0;
         int rowNum = differGenesExpData.size();
-        for(String key: differGenesExpData.keySet()){
-            columNum = differGenesExpData.get(key).size();
-            break;
-        }
-        String [] rowGeneIds = new String[rowNum];
-        double[][] differExpArrayData = new double[rowNum][columNum];
-        this.convertDifferExpMapDataToArray(differGenesExpData,differExpArrayData,rowGeneIds);
+
+        double [][] differExpArrayData =this.convertDifferExpMapDataToArray(differGenesExpData,rowGeneIds);
+        MyPrint.print("构造的差异表达基因矩阵，基因个数 = "+differExpArrayData.length +" 列数 = "+differExpArrayData[0].length);
+
+        columNum = differExpArrayData[0].length;
 
         double [][] cosDistance = new double[rowNum][rowNum];
         //计算两两基因之间的相似度
@@ -71,33 +74,75 @@ public class CalculateCosDistanceAndOutputEdges {
             }
 
         }
-        //输出余弦相似度矩阵，为了看一下数据
-        this.outPutCosDistanceMatrix(cosDistance);
 
-        this.findAndOutPutEdges(cosDistance,rowGeneIds);
+        //输出余弦相似度矩阵，为了看一下数据
+//        this.outPutCosDistanceMatrix(cosDistance);
+
+        return cosDistance;
 
     }
 
     /**
-     * 把Map<String,List<Double>>格式的差异基因表达数据转换成 数组形式，便于计算两两基因之间的相似度
+     * 把Map<String,List<Double>>格式的差异基因表达数据转换成 数组形式，数组中的列是取均值后的值，便于计算两两基因之间的相似度
      * @param differGenesExpData 原始的差异表达基因数据
-     * @param arrayData 引用传递，达到返回值的目的，二维的差异表达基因数据
-     * @param rowGenes  与二维数组的行相对应，每一行的基因ID
+     * @param rowGenes  与二维数组的行相对应，每一行的基因ID,保存这个中间结果是为了方便解释 结论用
      */
-    public void convertDifferExpMapDataToArray(Map<String,List<Double>> differGenesExpData,double [][] arrayData,String[] rowGenes){
+    public double[][] convertDifferExpMapDataToArray(Map<String,List<Double>> differGenesExpData,String[] rowGenes){
 
+        int rowNum = differGenesExpData.size();//即差异表达的基因数
+        int columNum = 2+9+18+24+40+2;//即共有多少个小实验条件，也即去均值后的列数
+        double [][]arrayData = new double[rowNum][columNum];
 
         Iterator iterator = differGenesExpData.entrySet().iterator();
         int i = 0;
         while(iterator.hasNext()){
             Map.Entry<String,List<Double>> entry = (Map.Entry<String,List<Double>>)iterator.next();
             rowGenes[i] = entry.getKey();
-            int columNum = entry.getValue().size();
-            for(int j=0;j < columNum;j++){
-                arrayData[i][j] = entry.getValue().get(j);
+            int k = entry.getValue().size();//原始芯片的总个数，注意有2列数据
+            List<Double> list = entry.getValue();
+            //处理一行数据 计算均值
+            int index=0;
+            int j=0;
+            double sum = 0.0d;
+            //计算GSE7108系列
+            sum =list.get(0)+list.get(1)+list.get(4);
+            arrayData[i][j++] = sum/3;
+            sum =list.get(2)+list.get(3)+list.get(5);
+            arrayData[i][j++] = sum/3;
+            index = 6;
+
+            //计算GSE8432系列的 均值，index属于[6,32]
+            while (index <= 14){
+                if(index ==11 ||index==12){
+                    sum = list.get(index+9) + list.get(index+18);
+                    arrayData[i][j++]=sum/2;
+                }else {
+                    sum = list.get(index) + list.get(index+9) + list.get(index+18);
+                    arrayData[i][j++]=sum/3;
+                }
+                index++;
             }
+
+            //计算 GSE29740、29741系列, index属于[33,158]
+            index = 33;
+            while(index <= 158){
+                sum = list.get(index++) + list.get(index++) + list.get(index++);
+                arrayData[i][j++] = sum/3;
+            }
+            //计算 GSE33410系列, index属于[159,278]
+            while(index <= 278){
+                sum = list.get(index++) + list.get(index++) + list.get(index++);
+                arrayData[i][j++] = sum/3;
+            }
+            //计算 GSE41724系列, index属于[279,283]
+            sum = list.get(index++) + list.get(index++);
+            arrayData[i][j++] = sum/2;
+            sum = list.get(index++) + list.get(index++) +list.get(index);
+            arrayData[i][j++] = sum/3;
+
             i++;
         }
+        return arrayData;
     }
 
     /**
@@ -122,8 +167,8 @@ public class CalculateCosDistanceAndOutputEdges {
 
     //根据相似度的阈值，找距离大于阈值的边
     public void findAndOutPutEdges(double [][] cosDistance ,String[] rowGeneIds){
-        File file1=new File("D:\\paperdata\\soybean\\differExpGenes network\\genesNetworkOfDistanceThreshold3.txt");
-        File file2=new File("D:\\paperdata\\soybean\\differExpGenes network\\genesNetworkOfDistanceThreshold5.txt");
+        File file1=new File("D:\\paperdata\\soybean\\differExpGenes network\\genesNetworkOfCosDistThreshold1.txt");
+        File file2=new File("D:\\paperdata\\soybean\\differExpGenes network\\genesNetworkOfCosDistThreshold2.txt");
         try {
             OutputStreamWriter ow1=new OutputStreamWriter(new FileOutputStream(file1), "GBK");
             BufferedWriter br1=new BufferedWriter(ow1);
@@ -131,33 +176,40 @@ public class CalculateCosDistanceAndOutputEdges {
             BufferedWriter br2=new BufferedWriter(ow2);
             double mean = getMeanValue(cosDistance);
             MyPrint.print("差异表达基因的相似度均值：",""+mean);
-            double threshold1=mean*3;//阈值取均值的3倍
-            double threshold2=mean*5;//阈值取均值的5倍
+            double threshold1=mean*1.03;//阈值取相似度的均值
+            double threshold2=mean*1.035;//阈值取均值的1.1倍
+            double threshold3=mean*0.92;//阈值取均值的1.1倍
             int n = cosDistance.length;
 
-            List<String> edgesOf3 = new ArrayList<>();
-            List<String> edgesOf5 = new ArrayList<>();
+            List<String> edgesOf1mean = new ArrayList<>();
+            List<String> edgesOfThreshold2 = new ArrayList<>();
+            List<String> edgesOfThreshold3 = new ArrayList<>();
 
             for(int i=0;i < n;i++){
                 for(int j=i+1;j < n;j++){
-                    if(cosDistance[i][j] > 1.5*mean){
+                    if(cosDistance[i][j] > threshold1){
                         //如果基因i、j之间的距离大于mean，在i、j之间创建一条边
                         String edge=rowGeneIds[i]+"\t"+rowGeneIds[j]+"\n";//以对应的基因ID作为 节点
-                        edgesOf3.add(edge);
+                        edgesOf1mean.add(edge);
 
                         if(cosDistance[i][j] > threshold2){
-                            edgesOf5.add(edge);
+                            edgesOfThreshold2.add(edge);
                         }
                     }
+//                    if(cosDistance[i][j] < threshold3){
+//                        String edge=rowGeneIds[i]+"\t"+rowGeneIds[j]+"\n";//以对应的基因ID作为 节点
+//                        edgesOfThreshold3.add(edge);
+//                    }
                 }
             }
 
-            MyPrint.print("3倍均值的边共有：",edgesOf3.size()+"条");
-            MyPrint.print("5倍均值的边共有：",edgesOf5.size()+"条");
+            MyPrint.print("阈值"+threshold1+"的边共有：",edgesOf1mean.size()+"条");
+            MyPrint.print("阈值"+threshold2+"的边共有：",edgesOfThreshold2.size()+"条");
+            MyPrint.print("阈值"+threshold3+"的边共有：",edgesOfThreshold3.size()+"条");
 
             SimpleDateFormat df1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
             System.out.println("开始输出满足阈值的边："+df1.format(new Date()));// new Date()为获取当前系统时间
-            Iterator iter=edgesOf3.iterator();
+            Iterator iter=edgesOf1mean.iterator();
             while(iter.hasNext()){
                 String ed=(String)iter.next();
                 br1.write(ed);
@@ -165,8 +217,8 @@ public class CalculateCosDistanceAndOutputEdges {
 
             br1.close();
             ow1.close();
-            MyPrint.print("阈值为3倍的输出完毕："+df1.format(new Date()));// new Date()为获取当前系统时间
-            Iterator iter2=edgesOf5.iterator();
+            MyPrint.print("阈值"+threshold1+"的边输出完毕："+df1.format(new Date()));// new Date()为获取当前系统时间
+            Iterator iter2=edgesOfThreshold2.iterator();
             while(iter2.hasNext()){
                 String ed=(String)iter2.next();
                 br2.write(ed);
@@ -174,7 +226,7 @@ public class CalculateCosDistanceAndOutputEdges {
 
             br2.close();
             ow2.close();
-            MyPrint.print("阈值为5倍的输出完毕："+df1.format(new Date()));// new Date()为获取当前系统时间
+            MyPrint.print("阈值"+threshold3+"的边输出完毕："+df1.format(new Date()));// new Date()为获取当前系统时间
         } catch (UnsupportedEncodingException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

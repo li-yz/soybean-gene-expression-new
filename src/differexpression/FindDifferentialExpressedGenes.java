@@ -78,8 +78,8 @@ public class FindDifferentialExpressedGenes {
     }
 
     /**
-     * 读取原始数据，按数据说明拆分数据（由于每个GSE序列的数据，对照组、实验组组数不一样，要针对每个文件重写这个拆分读取函数）
-     * 适用于GSE7108的拆分方法
+     * 读取原始的归一化之后的数据
+     *
      * @param geneIds
      * @param br BufferdReader对象
      * @throws IOException
@@ -106,7 +106,7 @@ public class FindDifferentialExpressedGenes {
      * @param differGenes 用来保存找到的差异表达基因的ID
      * @param differIndexs 保存差异表达基因的下标
      */
-    private void findDifferGenes(String GSEName,String[] genes,double[][] allGeneExpData,List<String>differGenes,List<Integer> differIndexs ,Set<String> differGenesOfAllGSMs){
+    private void findDifferGenes(String GSEName,String[] genes,double[][] allGeneExpData,List<String>differGenes,List<Integer> differIndexs ,Set<String> differGenesOfAllGSEs){
         int gene_num = genes.length;
         double [] foldChange = new double[gene_num];
 
@@ -119,7 +119,7 @@ public class FindDifferentialExpressedGenes {
             if(isDifferExpressed(foldChange[i])){
                 differGenes.add(genes[i]);
                 differIndexs.add(i);
-                differGenesOfAllGSMs.add(genes[i]);
+                differGenesOfAllGSEs.add(genes[i]);
             }
         }
         MyPrint.print(GSEName+"差异表达基因个数：","" + differGenes.size());
@@ -134,6 +134,13 @@ public class FindDifferentialExpressedGenes {
         return v >= 2 || v <= 0.5;
     }
 
+    /**
+     *
+     * @param GSEName GSE系列名字，不同的系列的
+     * @param allGeneExpData 归一化之后的表达数据，不同系列 的实验组/对照组 数据 分布规律不同，因此每个系列都要特定计算
+     * @param foldChange 保存一个实验系列中 所有基因的fold-change值
+     * @param i
+     */
     private void calculateFoldChangeForDifferGSE(String GSEName, double[][] allGeneExpData, double[] foldChange, int i) {
         double meanValueOfControl =0.0d;
         double meanValueOfTreatment =0.0d;
