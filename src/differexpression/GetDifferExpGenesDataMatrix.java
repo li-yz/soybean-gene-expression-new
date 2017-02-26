@@ -34,6 +34,12 @@ public class GetDifferExpGenesDataMatrix {
 
     }
 
+    /**
+     *
+     * @param differExpGenes 筛选得到的差异表达基因IDs集合
+     * @param differGenesExpData 用来保存基因表达数据矩阵
+     * @param differExpDataTableHeader 保存基因表达数据矩阵的“表头”
+     */
     public void startReadNormalizationData(Set<String> differExpGenes,Map<String,List<Double>> differGenesExpData, List<String> differExpDataTableHeader){
         List<String> dataPaths = new ArrayList<>();//所有GSE系列 归一化之后的数据文件 路径
         dataPaths.add("D:\\paperdata\\soybean\\RMA normalization data\\GSE7108_Su_RMA_matrix.txt");

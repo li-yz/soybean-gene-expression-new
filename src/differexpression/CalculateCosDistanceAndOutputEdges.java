@@ -7,8 +7,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
- * åˆ©ç”¨GetDifferExpGenesDataMatrixä¸­æ„é€ å‡ºæ¥çš„ å·®å¼‚è¡¨è¾¾åŸºå› æ•°æ®
- * è®¡ç®—ä¸¤ä¸¤åŸºå› ä¹‹é—´çš„ä½™å¼¦ç›¸ä¼¼åº¦ï¼Œæ»¡è¶³é˜ˆå€¼èŒƒå›´çš„ ä¸¤ä¸ªåŸºå› ä¹‹é—´å°±å»ºç«‹è¾¹å…³ç³»
+ * ÀûÓÃGetDifferExpGenesDataMatrixÖĞ¹¹Ôì³öÀ´µÄ ²îÒì±í´ï»ùÒòÊı¾İ
+ * ¼ÆËãÁ½Á½»ùÒòÖ®¼äµÄÓàÏÒÏàËÆ¶È£¬Âú×ããĞÖµ·¶Î§µÄ Á½¸ö»ùÒòÖ®¼ä¾Í½¨Á¢±ß¹ØÏµ
  *
  * Created by Liyanzhen on 2016/12/9.
  */
@@ -16,50 +16,73 @@ public class CalculateCosDistanceAndOutputEdges {
     public static void main(String []args){
         GetDifferExpGenesDataMatrix getDifferExpGenesDataMatrix = new GetDifferExpGenesDataMatrix();
 
-        //å…ˆæŠŠæ‰¾åˆ°çš„å·®å¼‚è¡¨è¾¾åŸºå› é›†åˆè¯»å–è¿›æ¥
+        //ÏÈ°ÑÕÒµ½µÄ²îÒì±í´ï»ùÒò¼¯ºÏ¶ÁÈ¡½øÀ´
         Set<String> differExpGenes = new HashSet<>();
         getDifferExpGenesDataMatrix.readDifferGenes(differExpGenes);
 
-        MyPrint.print("è¯»å–åˆ°å·®å¼‚è¡¨è¾¾åŸºå› IDé›†åˆ","å…±ï¼š"+differExpGenes.size());
+        MyPrint.print("¶ÁÈ¡µ½²îÒì±í´ï»ùÒòID¼¯ºÏ","¹²£º"+differExpGenes.size());
 
-        //å¼€å§‹æ„é€  å·®å¼‚è¡¨è¾¾åŸºå› æ•°æ® çŸ©é˜µã€‚è¡Œè¡¨ç¤ºä¸€ä¸ªåŸºå› ï¼Œåˆ—æ˜¯æ¯ä¸€ä¸ªGSEå®éªŒæ¡ä»¶çš„å‡å€¼(!!!æš‚æ—¶å…ˆå–æ‰€æœ‰çš„replicatesä½œä¸ºåˆ—ï¼ï¼ï¼ï¼)ã€‚
-        //è¯»å–æ‰€æœ‰çš„ å½’ä¸€åŒ–ä¹‹åçš„æ•°æ®çŸ©é˜µ
+        //¿ªÊ¼¹¹Ôì ²îÒì±í´ï»ùÒòÊı¾İ ¾ØÕó¡£ĞĞ±íÊ¾Ò»¸ö»ùÒò£¬ÁĞÊÇÃ¿Ò»¸öGSEÊµÑéÌõ¼şµÄ¾ùÖµ(!!!ÔİÊ±ÏÈÈ¡ËùÓĞµÄreplicates×÷ÎªÁĞ£¡£¡£¡£¡)¡£
+        //¶ÁÈ¡ËùÓĞµÄ ¹éÒ»»¯Ö®ºóµÄÊı¾İ¾ØÕó
 
-        Map<String,List<Double>> differGenesExpData = new HashMap<>();//ç”¨æ¥ä¿å­˜  â€œåŸºå› Idâ€---è¡¨è¾¾æ•°æ® æ•°æ®è¡¨
-        List<String> differExpDataTableHeader = new ArrayList<>();//ç”¨æ¥ä¿å­˜æ•°æ®è¡¨çš„ è¡¨å¤´ä¿¡æ¯ï¼Œå³æ¯ä¸€åˆ— å¯¹åº”çš„æ˜¯å“ªä¸ªå®éªŒæ¡ä»¶ï¼Œæ–¹ä¾¿åç»­è§£é‡Šå®éªŒç»“æœ
+        Map<String,List<Double>> differGenesExpData = new HashMap<>();//ÓÃÀ´±£´æ  ¡°»ùÒòId¡±---±í´ïÊı¾İ Êı¾İ±í
+        List<String> differExpDataTableHeader = new ArrayList<>();//ÓÃÀ´±£´æÊı¾İ±íµÄ ±íÍ·ĞÅÏ¢£¬¼´Ã¿Ò»ÁĞ ¶ÔÓ¦µÄÊÇÄÄ¸öÊµÑéÌõ¼ş£¬·½±ãºóĞø½âÊÍÊµÑé½á¹û
         getDifferExpGenesDataMatrix.startReadNormalizationData(differExpGenes,differGenesExpData,differExpDataTableHeader);
 
 
         CalculateCosDistanceAndOutputEdges obj = new CalculateCosDistanceAndOutputEdges();
         obj.outPutDifferExpData(differGenesExpData,differExpDataTableHeader);
-        MyPrint.print("è¾“å‡ºå·®å¼‚è¡¨è¾¾åŸºå› æ•°æ®åˆ°æ–‡ä»¶ï¼Œå®Œæˆï¼ï¼ï¼");
-        String [] rowGeneIds = new String[differGenesExpData.size()];
-        double[][]cosDistance = obj.calculateCosDistanceAndConstructNetwork(differGenesExpData,rowGeneIds);
+        MyPrint.print("Êä³ö²îÒì±í´ï»ùÒòÊı¾İµ½ÎÄ¼ş£¬Íê³É£¡£¡£¡");
 
-        //é‡Šæ”¾å¼•ç”¨ï¼Œè®©GCèƒ½å›æ”¶æ­¤å†…å­˜åŒºåŸŸã€‚
+        int similarityType = 1;//similarityType´ú±íÑ¡ÔñÄÄÖÖÏàËÆ¶È¶ÈÁ¿ £ºsimilarityType=0 Ê±Ñ¡ÔñÓàÏÒÏàËÆ¶È£»similarityType=1Ê±Ñ¡ÔñÆ¤¶ûÉ­Ïà¹ØÏµÊı
+        String [] rowGeneIds = new String[differGenesExpData.size()];
+        double[][]cosDistance = obj.calculateSimilarityAndConstructNetwork(differGenesExpData,rowGeneIds,similarityType);
+
+        //ÊÍ·ÅÒıÓÃ£¬ÈÃGCÄÜ»ØÊÕ´ËÄÚ´æÇøÓò¡£
         differGenesExpData = null;
 
-        obj.findAndOutPutEdges(cosDistance,rowGeneIds);
+        int isWeightedOrNot = 1;
+        obj.findAndOutPutEdges(cosDistance,rowGeneIds,isWeightedOrNot);
     }
 
 
     /**
-     * è®¡ç®—ä½™å¼¦ç›¸ä¼¼åº¦ çŸ©é˜µ
-     * @param differGenesExpData ä¼ è¿›æ¥çš„æ˜¯æœªå–å¤šä¸ªreplicationså‡å€¼çš„æ•°æ®ã€‚
-     * ä¸ºäº†è®¡ç®—çš„å‡†ç¡®æ€§ï¼ŒåŒæ—¶é™ä½ç»´åº¦ï¼Œåº”è¯¥å…ˆåšconvertï¼Œå–æ¯ä¸ªå°å®éªŒæ¡ä»¶çš„å‡å€¼ä½œä¸ºä¸€ä¸ªåˆ—ï¼Œ  åŒæ—¶ç”±äºä¸åŒçš„GSEç³»åˆ—ä¸­ ç›¸åŒçš„replicationsåˆ†å¸ƒè§„å¾‹ä¸åŒï¼Œconvertæ–¹æ³•åº”è¯¥é’ˆå¯¹æ¯ä¸€ä¸ªå®éªŒæ¡ä»¶ç‰¹å†™
+     * ¼ÆËãÓàÏÒÏàËÆ¶È ¾ØÕó
+     * @param differGenesExpData ´«½øÀ´µÄÊÇÎ´È¡¶à¸öreplications¾ùÖµµÄÊı¾İ¡£
+     * @param rowGeneIds °´ĞòºÅ±£´æ¶ÔÓÚµÄ»ùÒòÃû
+     * @param similarityType similarityType´ú±íÑ¡ÔñÄÄÖÖÏàËÆ¶È¶ÈÁ¿ £ºsimilarityType=0 Ê±Ñ¡ÔñÓàÏÒÏàËÆ¶È£»similarityType=1Ê±Ñ¡ÔñÆ¤¶ûÉ­Ïà¹ØÏµÊı
+     *
+     * ÎªÁË¼ÆËãµÄ×¼È·ĞÔ£¬Í¬Ê±½µµÍÎ¬¶È£¬Ó¦¸ÃÏÈ×öconvert£¬È¡Ã¿¸öĞ¡ÊµÑéÌõ¼şµÄ¾ùÖµ×÷ÎªÒ»¸öÁĞ£¬  Í¬Ê±ÓÉÓÚ²»Í¬µÄGSEÏµÁĞÖĞ ÏàÍ¬µÄreplications·Ö²¼¹æÂÉ²»Í¬£¬convert·½·¨Ó¦¸ÃÕë¶ÔÃ¿Ò»¸öÊµÑéÌõ¼şÌØĞ´
      */
-    public double[][] calculateCosDistanceAndConstructNetwork(Map<String,List<Double>> differGenesExpData,String [] rowGeneIds){
-        //å…ˆæŠŠ Map ç»“æ„çš„æ•°æ®è½¬æ¢æˆ äºŒç»´æ•°ç»„
-        int columNum = 0;
-        int rowNum = differGenesExpData.size();
+    public double[][] calculateSimilarityAndConstructNetwork(Map<String,List<Double>> differGenesExpData, String [] rowGeneIds,int similarityType){
+        //ÏÈ°Ñ Map ½á¹¹µÄÊı¾İ×ª»»³É ¶şÎ¬Êı×é
+
 
         double [][] differExpArrayData =this.convertDifferExpMapDataToArray(differGenesExpData,rowGeneIds);
-        MyPrint.print("æ„é€ çš„å·®å¼‚è¡¨è¾¾åŸºå› çŸ©é˜µï¼ŒåŸºå› ä¸ªæ•° = "+differExpArrayData.length +" åˆ—æ•° = "+differExpArrayData[0].length);
+        MyPrint.print("¹¹ÔìµÄ²îÒì±í´ï»ùÒò¾ØÕó£¬»ùÒò¸öÊı = "+differExpArrayData.length +" ÁĞÊı = "+differExpArrayData[0].length);
 
-        columNum = differExpArrayData[0].length;
+        int geneNum = differExpArrayData.length;
+        double[][] similarityMatrix = new double[geneNum][geneNum];
+        if(similarityType == 0){
+            similarityMatrix = getCosSimilarity(differExpArrayData);
+        }else if(similarityType == 1){
+            similarityMatrix = getPearsonSimilarity(differExpArrayData);
+        }
+
+
+        //Êä³öÓàÏÒÏàËÆ¶È¾ØÕó£¬ÎªÁË¿´Ò»ÏÂÊı¾İ
+//        this.outPutCosDistanceMatrix(similarityMatrix);
+
+        return similarityMatrix;
+
+    }
+
+    private double[][] getCosSimilarity(double[][] differExpArrayData) {
+        int rowNum = differExpArrayData.length;
+        int columNum = differExpArrayData[0].length;
 
         double [][] cosDistance = new double[rowNum][rowNum];
-        //è®¡ç®—ä¸¤ä¸¤åŸºå› ä¹‹é—´çš„ç›¸ä¼¼åº¦
+        //¼ÆËãÁ½Á½»ùÒòÖ®¼äµÄÏàËÆ¶È
         for(int i=0;i < rowNum;i++){
             for(int j=i+1;j < rowNum;j++){
                 double mm = 0.0d;
@@ -74,23 +97,48 @@ public class CalculateCosDistanceAndOutputEdges {
             }
 
         }
-
-        //è¾“å‡ºä½™å¼¦ç›¸ä¼¼åº¦çŸ©é˜µï¼Œä¸ºäº†çœ‹ä¸€ä¸‹æ•°æ®
-//        this.outPutCosDistanceMatrix(cosDistance);
-
         return cosDistance;
-
     }
 
+    private double[][] getPearsonSimilarity(double[][] differExpArrayData) {
+        int rowNum = differExpArrayData.length;
+        int columNum = differExpArrayData[0].length;
+
+        double [][] cosDistance = new double[rowNum][rowNum];
+        //¼ÆËãÁ½Á½»ùÒòÖ®¼äµÄÏàËÆ¶È
+        for(int i=0;i < rowNum;i++){
+            for(int j=i+1;j < rowNum;j++){
+                double xySum = 0.0d;
+                double xSum=0.0d;
+                double ySum=0.0d;
+                double x2Sum=0.0d;
+                double y2Sum=0.0d;
+                for(int k=0;k < columNum;k++){
+                    xySum+=differExpArrayData[i][k]*differExpArrayData[j][k];
+                    xSum+=differExpArrayData[i][k];
+                    ySum+=differExpArrayData[j][k];
+                    x2Sum+=differExpArrayData[i][k]*differExpArrayData[i][k];
+                    y2Sum+=differExpArrayData[j][k]*differExpArrayData[j][k];
+                }
+                double fenzi = xySum-(xSum*ySum)/columNum;
+                double fenmu = Math.sqrt((x2Sum - (xSum*xSum)/columNum)*(y2Sum - (ySum*ySum)/columNum));
+                cosDistance[i][j] = fenzi/fenmu;
+            }
+
+        }
+        return cosDistance;
+    }
+
+
     /**
-     * æŠŠMap<String,List<Double>>æ ¼å¼çš„å·®å¼‚åŸºå› è¡¨è¾¾æ•°æ®è½¬æ¢æˆ æ•°ç»„å½¢å¼ï¼Œæ•°ç»„ä¸­çš„åˆ—æ˜¯å–å‡å€¼åçš„å€¼ï¼Œä¾¿äºè®¡ç®—ä¸¤ä¸¤åŸºå› ä¹‹é—´çš„ç›¸ä¼¼åº¦
-     * @param differGenesExpData åŸå§‹çš„å·®å¼‚è¡¨è¾¾åŸºå› æ•°æ®
-     * @param rowGenes  ä¸äºŒç»´æ•°ç»„çš„è¡Œç›¸å¯¹åº”ï¼Œæ¯ä¸€è¡Œçš„åŸºå› ID,ä¿å­˜è¿™ä¸ªä¸­é—´ç»“æœæ˜¯ä¸ºäº†æ–¹ä¾¿è§£é‡Š ç»“è®ºç”¨
+     * °ÑMap<String,List<Double>>¸ñÊ½µÄ²îÒì»ùÒò±í´ïÊı¾İ×ª»»³É Êı×éĞÎÊ½£¬Êı×éÖĞµÄÁĞÊÇÈ¡¾ùÖµºóµÄÖµ£¬±ãÓÚ¼ÆËãÁ½Á½»ùÒòÖ®¼äµÄÏàËÆ¶È
+     * @param differGenesExpData Ô­Ê¼µÄ²îÒì±í´ï»ùÒòÊı¾İ
+     * @param rowGenes  Óë¶şÎ¬Êı×éµÄĞĞÏà¶ÔÓ¦£¬Ã¿Ò»ĞĞµÄ»ùÒòID,±£´æÕâ¸öÖĞ¼ä½á¹ûÊÇÎªÁË·½±ã½âÊÍ ½áÂÛÓÃ
      */
     public double[][] convertDifferExpMapDataToArray(Map<String,List<Double>> differGenesExpData,String[] rowGenes){
 
-        int rowNum = differGenesExpData.size();//å³å·®å¼‚è¡¨è¾¾çš„åŸºå› æ•°
-        int columNum = 2+9+18+24+40+2;//å³å…±æœ‰å¤šå°‘ä¸ªå°å®éªŒæ¡ä»¶ï¼Œä¹Ÿå³å»å‡å€¼åçš„åˆ—æ•°
+        int rowNum = differGenesExpData.size();//¼´²îÒì±í´ïµÄ»ùÒòÊı
+        int columNum = 2+9+18+24+40+2;//¼´¹²ÓĞ¶àÉÙ¸öĞ¡ÊµÑéÌõ¼ş£¬Ò²¼´È¥¾ùÖµºóµÄÁĞÊı
         double [][]arrayData = new double[rowNum][columNum];
 
         Iterator iterator = differGenesExpData.entrySet().iterator();
@@ -98,20 +146,20 @@ public class CalculateCosDistanceAndOutputEdges {
         while(iterator.hasNext()){
             Map.Entry<String,List<Double>> entry = (Map.Entry<String,List<Double>>)iterator.next();
             rowGenes[i] = entry.getKey();
-            int k = entry.getValue().size();//åŸå§‹èŠ¯ç‰‡çš„æ€»ä¸ªæ•°ï¼Œæ³¨æ„æœ‰2åˆ—æ•°æ®
+            int k = entry.getValue().size();//Ô­Ê¼Ğ¾Æ¬µÄ×Ü¸öÊı£¬×¢ÒâÓĞ2ÁĞÊı¾İ
             List<Double> list = entry.getValue();
-            //å¤„ç†ä¸€è¡Œæ•°æ® è®¡ç®—å‡å€¼
+            //´¦ÀíÒ»ĞĞÊı¾İ ¼ÆËã¾ùÖµ
             int index=0;
             int j=0;
             double sum = 0.0d;
-            //è®¡ç®—GSE7108ç³»åˆ—
+            //¼ÆËãGSE7108ÏµÁĞ
             sum =list.get(0)+list.get(1)+list.get(4);
             arrayData[i][j++] = sum/3;
             sum =list.get(2)+list.get(3)+list.get(5);
             arrayData[i][j++] = sum/3;
             index = 6;
 
-            //è®¡ç®—GSE8432ç³»åˆ—çš„ å‡å€¼ï¼Œindexå±äº[6,32]
+            //¼ÆËãGSE8432ÏµÁĞµÄ ¾ùÖµ£¬indexÊôÓÚ[6,32]
             while (index <= 14){
                 if(index ==11 ||index==12){
                     sum = list.get(index+9) + list.get(index+18);
@@ -123,18 +171,18 @@ public class CalculateCosDistanceAndOutputEdges {
                 index++;
             }
 
-            //è®¡ç®— GSE29740ã€29741ç³»åˆ—, indexå±äº[33,158]
+            //¼ÆËã GSE29740¡¢29741ÏµÁĞ, indexÊôÓÚ[33,158]
             index = 33;
             while(index <= 158){
                 sum = list.get(index++) + list.get(index++) + list.get(index++);
                 arrayData[i][j++] = sum/3;
             }
-            //è®¡ç®— GSE33410ç³»åˆ—, indexå±äº[159,278]
+            //¼ÆËã GSE33410ÏµÁĞ, indexÊôÓÚ[159,278]
             while(index <= 278){
                 sum = list.get(index++) + list.get(index++) + list.get(index++);
                 arrayData[i][j++] = sum/3;
             }
-            //è®¡ç®— GSE41724ç³»åˆ—, indexå±äº[279,283]
+            //¼ÆËã GSE41724ÏµÁĞ, indexÊôÓÚ[279,283]
             sum = list.get(index++) + list.get(index++);
             arrayData[i][j++] = sum/2;
             sum = list.get(index++) + list.get(index++) +list.get(index);
@@ -146,70 +194,111 @@ public class CalculateCosDistanceAndOutputEdges {
     }
 
     /**
-     * è®¡ç®—ç›¸ä¼¼åº¦çš„å‡å€¼
+     * ¼ÆËãÏàËÆ¶ÈµÄ¾ùÖµ
      * @return
      */
-    public double getMeanValue(double [][] cosDistance){
-        double sum=0.0d;
-        int count=0;
-        int n=cosDistance.length;
+    public double[] getMeanValue(double [][] similarityMatrix){
+        double sumPositive=0.0d;
+        int countPositive=0;
+        double sumNegative = 0.0d;
+        int countNegative=0;
+        int n=similarityMatrix.length;
+        double[] means = new double[2];
         for(int i=0;i < n;i++){
             for(int j=i+1;j < n;j++){
-                if(cosDistance[i][j] > 0){
-                    sum+=cosDistance[i][j];
-                    count++;
+                if(similarityMatrix[i][j] > 0){
+                    sumPositive+=similarityMatrix[i][j];
+                    countPositive++;
+                }
+                if(similarityMatrix[i][j] < 0){
+                    sumNegative+=similarityMatrix[i][j];
+                    countNegative++;
                 }
             }
         }
-        return sum/count;
+        means[0] = sumPositive/countPositive;
+        means[1] = sumNegative/countNegative;
+        return means;
 
     }
 
-    //æ ¹æ®ç›¸ä¼¼åº¦çš„é˜ˆå€¼ï¼Œæ‰¾è·ç¦»å¤§äºé˜ˆå€¼çš„è¾¹
-    public void findAndOutPutEdges(double [][] cosDistance ,String[] rowGeneIds){
-        File file1=new File("D:\\paperdata\\soybean\\differExpGenes network\\genesNetworkOfCosDistThreshold1.txt");
-        File file2=new File("D:\\paperdata\\soybean\\differExpGenes network\\genesNetworkOfCosDistThreshold2.txt");
+
+    /**
+     *¸ù¾İÏàËÆ¶ÈÖµÀ´É¸Ñ¡Âú×ããĞÖµµÄ±ß£¬²¢´´½¨ÏëÒªµÄÍøÂçÍ¼£¨¼ÓÈ¨Í¼ or ÎŞÈ¨Í¼£©
+     * @param similarityMatrix »ùÒòÏàËÆ¶È¾ØÕó
+     * @param rowGeneIds °´ĞòºÅÅÅÁĞµÄ»ùÒòÃû
+     * @param isWeightedOrNot Ñ¡ÔñÒª´´½¨µÄÊÇ¼ÓÈ¨Í¼»¹ÊÇÎŞÈ¨Í¼£¬0±íÊ¾ÎŞÈ¨Í¼£»1±íÊ¾¼ÓÈ¨Í¼
+     */
+    public void findAndOutPutEdges(double [][] similarityMatrix ,String[] rowGeneIds,int isWeightedOrNot){
+        File file1=new File("D:\\paperdata\\soybean\\differExpGenes network\\genesNetworkOfSimilarityThreshold1.txt");
+        File file2=new File("D:\\paperdata\\soybean\\differExpGenes network\\genesNetworkOfSimilarityThreshold2.txt");
         try {
             OutputStreamWriter ow1=new OutputStreamWriter(new FileOutputStream(file1), "GBK");
             BufferedWriter br1=new BufferedWriter(ow1);
             OutputStreamWriter ow2=new OutputStreamWriter(new FileOutputStream(file2), "GBK");
             BufferedWriter br2=new BufferedWriter(ow2);
-            double mean = getMeanValue(cosDistance);
-            MyPrint.print("å·®å¼‚è¡¨è¾¾åŸºå› çš„ç›¸ä¼¼åº¦å‡å€¼ï¼š",""+mean);
-            double threshold1=mean*1.03;//é˜ˆå€¼å–ç›¸ä¼¼åº¦çš„å‡å€¼
-            double threshold2=mean*1.035;//é˜ˆå€¼å–å‡å€¼çš„1.1å€
-            double threshold3=mean*0.92;//é˜ˆå€¼å–å‡å€¼çš„1.1å€
-            int n = cosDistance.length;
+            double[] means = getMeanValue(similarityMatrix);
+            MyPrint.print("²îÒì±í´ï»ùÒòµÄÏàËÆ¶È¾ùÖµ£ºÕıÏà¹ØµÄ¾ùÖµ="+means[0]+", ¸ºÏà¹ØµÄ¾ùÖµ = "+means[1]);
+            double threshold1Positive=means[0]*2;//ãĞÖµÈ¡ÏàËÆ¶ÈµÄ±¶Êı
+            double threshold2Positive=means[0]*2.3;
 
-            List<String> edgesOf1mean = new ArrayList<>();
+            double threshold1Negative=means[1]*2;
+            double threshold2Negative=means[1]*2.3;
+
+            int n = similarityMatrix.length;
+
+            List<String> edgesOfThreshold1 = new ArrayList<>();
             List<String> edgesOfThreshold2 = new ArrayList<>();
-            List<String> edgesOfThreshold3 = new ArrayList<>();
+            int countTh1Positive = 0;
+            int countTh1Negative = 0;
+            int countTh2Positive = 0;
+            int countTh2Negative = 0;
 
             for(int i=0;i < n;i++){
                 for(int j=i+1;j < n;j++){
-                    if(cosDistance[i][j] > threshold1){
-                        //å¦‚æœåŸºå› iã€jä¹‹é—´çš„è·ç¦»å¤§äºmeanï¼Œåœ¨iã€jä¹‹é—´åˆ›å»ºä¸€æ¡è¾¹
-                        String edge=rowGeneIds[i]+"\t"+rowGeneIds[j]+"\n";//ä»¥å¯¹åº”çš„åŸºå› IDä½œä¸º èŠ‚ç‚¹
-                        edgesOf1mean.add(edge);
+                    if(similarityMatrix[i][j] > threshold1Positive){
+                        //Èç¹û»ùÒòi¡¢jÖ®¼äµÄ¾àÀë´óÓÚmean£¬ÔÚi¡¢jÖ®¼ä´´½¨Ò»Ìõ±ß
+                        String edge="";
+                        if(isWeightedOrNot == 0) {
+                            edge = rowGeneIds[i] + "\t" + rowGeneIds[j] + "\n";//ÒÔ¶ÔÓ¦µÄ»ùÒòID×÷Îª ½Úµã
+                        }else if(isWeightedOrNot == 1) {
+                            edge = rowGeneIds[i] + "\t" + rowGeneIds[j] + "\t"+similarityMatrix[i][j] + "\n";//ÒÔ¶ÔÓ¦µÄ»ùÒòID×÷Îª ½Úµã
 
-                        if(cosDistance[i][j] > threshold2){
+                        }
+                        edgesOfThreshold1.add(edge);
+                        countTh1Positive++;
+
+                        if(similarityMatrix[i][j] > threshold2Positive){
                             edgesOfThreshold2.add(edge);
+                            countTh2Positive++;
                         }
                     }
-//                    if(cosDistance[i][j] < threshold3){
-//                        String edge=rowGeneIds[i]+"\t"+rowGeneIds[j]+"\n";//ä»¥å¯¹åº”çš„åŸºå› IDä½œä¸º èŠ‚ç‚¹
-//                        edgesOfThreshold3.add(edge);
-//                    }
+                    if(similarityMatrix[i][j] < threshold1Negative){
+                        String edge="";
+                        if(isWeightedOrNot == 0) {
+                            edge = rowGeneIds[i] + "\t" + rowGeneIds[j] + "\n";//ÒÔ¶ÔÓ¦µÄ»ùÒòID×÷Îª ½Úµã
+                        }else if(isWeightedOrNot == 1) {
+                            edge = rowGeneIds[i] + "\t" + rowGeneIds[j] + "\t"+similarityMatrix[i][j] + "\n";//ÒÔ¶ÔÓ¦µÄ»ùÒòID×÷Îª ½Úµã
+
+                        }
+                        edgesOfThreshold1.add(edge);
+                        countTh1Negative++;
+                        if(similarityMatrix[i][j] < threshold2Negative){
+                            edgesOfThreshold2.add(edge);
+                            countTh2Negative++;
+                        }
+                    }
                 }
             }
 
-            MyPrint.print("é˜ˆå€¼"+threshold1+"çš„è¾¹å…±æœ‰ï¼š",edgesOf1mean.size()+"æ¡");
-            MyPrint.print("é˜ˆå€¼"+threshold2+"çš„è¾¹å…±æœ‰ï¼š",edgesOfThreshold2.size()+"æ¡");
-            MyPrint.print("é˜ˆå€¼"+threshold3+"çš„è¾¹å…±æœ‰ï¼š",edgesOfThreshold3.size()+"æ¡");
+            MyPrint.print("ãĞÖµ > threshold1Positive:"+threshold1Positive+"µÄ±ß¹²ÓĞ£º",countTh1Positive+"Ìõ");
+            MyPrint.print("ãĞÖµ < threshold1Negative:"+threshold1Negative+"µÄ±ß¹²ÓĞ£º",countTh1Negative+"Ìõ");
+            MyPrint.print("ãĞÖµ > threshold2Positive:"+threshold2Positive+"µÄ±ß¹²ÓĞ£º",countTh2Positive+"Ìõ");
+            MyPrint.print("ãĞÖµ < threshold2Negative:"+threshold2Negative+"µÄ±ß¹²ÓĞ£º",countTh2Negative+"Ìõ");
 
-            SimpleDateFormat df1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//è®¾ç½®æ—¥æœŸæ ¼å¼
-            System.out.println("å¼€å§‹è¾“å‡ºæ»¡è¶³é˜ˆå€¼çš„è¾¹ï¼š"+df1.format(new Date()));// new Date()ä¸ºè·å–å½“å‰ç³»ç»Ÿæ—¶é—´
-            Iterator iter=edgesOf1mean.iterator();
+            SimpleDateFormat df1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//ÉèÖÃÈÕÆÚ¸ñÊ½
+            System.out.println("¿ªÊ¼Êä³öÂú×ããĞÖµµÄ±ß£º"+df1.format(new Date()));// new Date()Îª»ñÈ¡µ±Ç°ÏµÍ³Ê±¼ä
+            Iterator iter=edgesOfThreshold1.iterator();
             while(iter.hasNext()){
                 String ed=(String)iter.next();
                 br1.write(ed);
@@ -217,7 +306,7 @@ public class CalculateCosDistanceAndOutputEdges {
 
             br1.close();
             ow1.close();
-            MyPrint.print("é˜ˆå€¼"+threshold1+"çš„è¾¹è¾“å‡ºå®Œæ¯•ï¼š"+df1.format(new Date()));// new Date()ä¸ºè·å–å½“å‰ç³»ç»Ÿæ—¶é—´
+            MyPrint.print("ãĞÖµ"+threshold1Positive+"µÄ±ßÊä³öÍê±Ï£º"+df1.format(new Date()));// new Date()Îª»ñÈ¡µ±Ç°ÏµÍ³Ê±¼ä
             Iterator iter2=edgesOfThreshold2.iterator();
             while(iter2.hasNext()){
                 String ed=(String)iter2.next();
@@ -226,7 +315,7 @@ public class CalculateCosDistanceAndOutputEdges {
 
             br2.close();
             ow2.close();
-            MyPrint.print("é˜ˆå€¼"+threshold3+"çš„è¾¹è¾“å‡ºå®Œæ¯•ï¼š"+df1.format(new Date()));// new Date()ä¸ºè·å–å½“å‰ç³»ç»Ÿæ—¶é—´
+            MyPrint.print("ãĞÖµ"+threshold2Positive+"µÄ±ßÊä³öÍê±Ï£º"+df1.format(new Date()));// new Date()Îª»ñÈ¡µ±Ç°ÏµÍ³Ê±¼ä
         } catch (UnsupportedEncodingException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -240,7 +329,7 @@ public class CalculateCosDistanceAndOutputEdges {
 
     }
 
-    //æ ¹æ®ç›¸ä¼¼åº¦çš„é˜ˆå€¼ï¼Œæ‰¾è·ç¦»å¤§äºé˜ˆå€¼çš„è¾¹
+    //¸ù¾İÏàËÆ¶ÈµÄãĞÖµ£¬ÕÒ¾àÀë´óÓÚãĞÖµµÄ±ß
     public void outPutDifferExpData(Map<String,List<Double>> differExpData, List<String> header){
         File file1=new File("D:\\paperdata\\soybean\\differExpressionGenes\\construct_differ_exp_data.txt");
         try {

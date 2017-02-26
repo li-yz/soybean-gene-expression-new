@@ -13,7 +13,7 @@ public class Test {
         int sum = find(m,k,n,matrix,0);
         MyPrint.print(sum+"");
 
-//        testDateTime();
+        testDateTime();
         testClear();
     }
     public static int find(int m,int k,int n,int[][] matrix,int i){
@@ -31,7 +31,7 @@ public class Test {
     }
 
     /**
-     * è·å–æ—¶é—´å·®ï¼Œæµ‹è¯•æ–¹æ³•
+     * »ñÈ¡Ê±¼ä²î£¬²âÊÔ·½·¨
      */
     public static void testDateTime(){
         try {
@@ -39,11 +39,11 @@ public class Test {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             String startDate = sdf.format(date);
 
-            Thread.sleep(60000);
+            Thread.sleep(6000);
 
             String endDate = sdf.format(new Date());
             int minutes = (int) (sdf.parse(endDate).getTime() - sdf.parse(startDate).getTime()) / (1000*60);
-            MyPrint.print("å½“å‰æ—¶é—´å·®ï¼š" + minutes);
+            MyPrint.print("µ±Ç°Ê±¼ä²î£º" + minutes);
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -60,7 +60,7 @@ public class Test {
             MyPrint.print(element+"");
         }
         map.get("first").clear();
-        MyPrint.print("clearå");
+        MyPrint.print("clearºó");
         for(String element: map.get("first")){
             MyPrint.print(element+"");
         }
