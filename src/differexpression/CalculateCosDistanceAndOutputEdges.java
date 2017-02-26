@@ -41,7 +41,7 @@ public class CalculateCosDistanceAndOutputEdges {
         //释放引用，让GC能回收此内存区域。
         differGenesExpData = null;
 
-        int isWeightedOrNot = 1;
+        int isWeightedOrNot = 1;//0表示构造无权图 ，1表示加权图
         obj.findAndOutPutEdges(cosDistance,rowGeneIds,isWeightedOrNot);
     }
 
@@ -260,7 +260,7 @@ public class CalculateCosDistanceAndOutputEdges {
                         //如果基因i、j之间的距离大于mean，在i、j之间创建一条边
                         String edge="";
                         if(isWeightedOrNot == 0) {
-                            edge = rowGeneIds[i] + "\t" + rowGeneIds[j] + "\n";//以对应的基因ID作为 节点
+                            edge = rowGeneIds[i] + "\t" + rowGeneIds[j] + "\t"+ 1 + "\n";//以对应的基因ID作为 节点
                         }else if(isWeightedOrNot == 1) {
                             edge = rowGeneIds[i] + "\t" + rowGeneIds[j] + "\t"+similarityMatrix[i][j] + "\n";//以对应的基因ID作为 节点
 
@@ -276,9 +276,9 @@ public class CalculateCosDistanceAndOutputEdges {
                     if(similarityMatrix[i][j] < threshold1Negative){
                         String edge="";
                         if(isWeightedOrNot == 0) {
-                            edge = rowGeneIds[i] + "\t" + rowGeneIds[j] + "\n";//以对应的基因ID作为 节点
+                            edge = rowGeneIds[i] + "\t" + rowGeneIds[j] + "\t"+ 1 + "\n";//以对应的基因ID作为 节点，一行：from to 值为1代表无权图
                         }else if(isWeightedOrNot == 1) {
-                            edge = rowGeneIds[i] + "\t" + rowGeneIds[j] + "\t"+similarityMatrix[i][j] + "\n";//以对应的基因ID作为 节点
+                            edge = rowGeneIds[i] + "\t" + rowGeneIds[j] + "\t"+similarityMatrix[i][j] + "\n";//以对应的基因ID作为 节点 ，一行：from to 相应权值
 
                         }
                         edgesOfThreshold1.add(edge);
