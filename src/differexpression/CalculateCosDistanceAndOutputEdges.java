@@ -1,6 +1,7 @@
 package differexpression;
 
 import utils.MyPrint;
+import utils.MySerialization;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
@@ -47,9 +48,9 @@ public class CalculateCosDistanceAndOutputEdges {
 
 
     /**
-     * 计算余弦相似度 矩阵
+     * 计算相似度 矩阵
      * @param differGenesExpData 传进来的是未取多个replications均值的数据。
-     * @param rowGeneIds 按序号保存对于的基因名
+     * @param rowGeneIds 按序号保存对应的基因名
      * @param similarityType similarityType代表选择哪种相似度度量 ：similarityType=0 时选择余弦相似度；similarityType=1时选择皮尔森相关系数
      *
      * 为了计算的准确性，同时降低维度，应该先做convert，取每个小实验条件的均值作为一个列，  同时由于不同的GSE系列中 相同的replications分布规律不同，convert方法应该针对每一个实验条件特写
@@ -60,6 +61,10 @@ public class CalculateCosDistanceAndOutputEdges {
 
         double [][] differExpArrayData =this.convertDifferExpMapDataToArray(differGenesExpData,rowGeneIds);
         MyPrint.print("构造的差异表达基因矩阵，基因个数 = "+differExpArrayData.length +" 列数 = "+differExpArrayData[0].length);
+
+        //将构造出的基因表达数据矩阵 differExpArrayData 和 基因ID--序号关系rowGeneIds序列化保存。方便再利用
+        MySerialization.serializeObject(differExpArrayData,"D:\\paperdata\\soybean\\differExpressionGenes\\differExpArrayData.obj");
+        MySerialization.serializeObject(rowGeneIds,"D:\\paperdata\\soybean\\differExpressionGenes\\rowGeneIds.obj");
 
         int geneNum = differExpArrayData.length;
         double[][] similarityMatrix = new double[geneNum][geneNum];
@@ -77,7 +82,7 @@ public class CalculateCosDistanceAndOutputEdges {
 
     }
 
-    private double[][] getCosSimilarity(double[][] differExpArrayData) {
+    public double[][] getCosSimilarity(double[][] differExpArrayData) {
         int rowNum = differExpArrayData.length;
         int columNum = differExpArrayData[0].length;
 
@@ -100,7 +105,7 @@ public class CalculateCosDistanceAndOutputEdges {
         return cosDistance;
     }
 
-    private double[][] getPearsonSimilarity(double[][] differExpArrayData) {
+    public double[][] getPearsonSimilarity(double[][] differExpArrayData) {
         int rowNum = differExpArrayData.length;
         int columNum = differExpArrayData[0].length;
 
@@ -138,7 +143,7 @@ public class CalculateCosDistanceAndOutputEdges {
     public double[][] convertDifferExpMapDataToArray(Map<String,List<Double>> differGenesExpData,String[] rowGenes){
 
         int rowNum = differGenesExpData.size();//即差异表达的基因数
-        int columNum = 2+9+18+24+40+2;//即共有多少个小实验条件，也即去均值后的列数
+        int columNum = 2+9+18+24+40+2;//即共有多少个小实验条件，也即取均值后的列数
         double [][]arrayData = new double[rowNum][columNum];
 
         Iterator iterator = differGenesExpData.entrySet().iterator();
@@ -240,10 +245,10 @@ public class CalculateCosDistanceAndOutputEdges {
             double[] means = getMeanValue(similarityMatrix);
             MyPrint.print("差异表达基因的相似度均值：正相关的均值="+means[0]+", 负相关的均值 = "+means[1]);
             double threshold1Positive=means[0]*2;//阈值取相似度的倍数
-            double threshold2Positive=means[0]*2.3;
+            double threshold2Positive=means[0]*2.78;
 
             double threshold1Negative=means[1]*2;
-            double threshold2Negative=means[1]*2.3;
+            double threshold2Negative=means[1]*3.7;
 
             int n = similarityMatrix.length;
 
