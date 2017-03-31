@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="new-community-detection">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../new-community-detection/classes/artifacts/new_community_detection_jar/new-community-detection.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

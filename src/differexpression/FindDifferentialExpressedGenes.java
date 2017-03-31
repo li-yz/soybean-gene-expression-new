@@ -1,12 +1,10 @@
 package differexpression;
 
 import utils.MyPrint;
+import utils.MySerialization;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,11 +22,16 @@ public class FindDifferentialExpressedGenes {
         GSEFileList.add("D:\\paperdata\\soybean\\RMA normalization data\\GSE41724_Su_RMA_matrix.txt");
 
         Set<String> differGenesOfAllGSEs = new HashSet<String>();
+        Map<String,Map<String,Double>> allFoldChange = new HashMap<>();
 
         FindDifferentialExpressedGenes find = new FindDifferentialExpressedGenes();
         for(String originSeriesDataPath :GSEFileList) {
-            find.readMatrixDataAndFindDifferGenes(originSeriesDataPath, differGenesOfAllGSEs);
+            find.readMatrixDataAndFindDifferGenes(originSeriesDataPath, differGenesOfAllGSEs,allFoldChange);
         }
+
+        //将allFoldChange中保存的各个实验条件下基因的fold-change值
+        MySerialization.serializeObject(allFoldChange,"D:\\soybean project\\soybean-differ-expression\\allFoldChange\\allFoldChange.obj");
+
         MyPrint.print("全部GSEs系列的差异表达基因",differGenesOfAllGSEs.size()+"");
         //保存找到的所有差异表达基因集合，把基因ID保存到txt文件中
         String outputPath = "D:\\paperdata\\soybean\\differExpressionGenes\\";
@@ -39,7 +42,7 @@ public class FindDifferentialExpressedGenes {
     /**
      * 读取原始表达数据，保存到合适的数据结构里
      */
-    public void readMatrixDataAndFindDifferGenes(String seriesMatrixDatapath ,Set<String> differGenesOfAllGSEs){
+    public void readMatrixDataAndFindDifferGenes(String seriesMatrixDatapath ,Set<String> differGenesOfAllGSEs ,Map<String,Map<String,Double>> allFoldChange){
         //从文件路径中截取 实验系列名，类似GSE7108这样的名称
         String GSEName = "";
         Pattern pattern = Pattern.compile("(GSE){1}[0-9]*");
@@ -65,7 +68,7 @@ public class FindDifferentialExpressedGenes {
             SplitLine(genes, allGenesExpData, br);
 
             //找本次实验中差异表达基因集合
-            findDifferGenes(GSEName,genes,allGenesExpData,differGenesOfOneGSE,differIndexs,differGenesOfAllGSEs);
+            findDifferGenes(GSEName,genes,allGenesExpData,differGenesOfOneGSE,differIndexs,differGenesOfAllGSEs ,allFoldChange);
 
             //文本文件 保存差异表达基因集合
             String outputPath = "D:\\paperdata\\soybean\\differExpressionGenes\\";
@@ -106,16 +109,14 @@ public class FindDifferentialExpressedGenes {
      * @param differGenes 用来保存找到的差异表达基因的ID
      * @param differIndexs 保存差异表达基因的下标
      */
-    private void findDifferGenes(String GSEName,String[] genes,double[][] allGeneExpData,List<String>differGenes,List<Integer> differIndexs ,Set<String> differGenesOfAllGSEs){
+    private void findDifferGenes(String GSEName,String[] genes,double[][] allGeneExpData,List<String>differGenes,List<Integer> differIndexs ,Set<String> differGenesOfAllGSEs ,Map<String,Map<String,Double>> allFoldChange){
         int gene_num = genes.length;
         double [] foldChange = new double[gene_num];
 
 
 
         for(int i=0;i < gene_num;i++){
-            double meanValueOfControl;
-            double meanValueOfTreatment;
-            calculateFoldChangeForDifferGSE(GSEName , allGeneExpData, foldChange, i);
+            calculateFoldChangeForDifferGSE(GSEName , allGeneExpData, foldChange, i ,genes,allFoldChange);
             if(isDifferExpressed(foldChange[i])){
                 differGenes.add(genes[i]);
                 differIndexs.add(i);
@@ -123,6 +124,8 @@ public class FindDifferentialExpressedGenes {
             }
         }
         MyPrint.print(GSEName+"差异表达基因个数：","" + differGenes.size());
+
+        //保存基因在每一个GSE实验下的foldchange值
     }
 
     /**
@@ -141,7 +144,7 @@ public class FindDifferentialExpressedGenes {
      * @param foldChange 保存一个实验系列中 所有基因的fold-change值
      * @param i
      */
-    private void calculateFoldChangeForDifferGSE(String GSEName, double[][] allGeneExpData, double[] foldChange, int i) {
+    private void calculateFoldChangeForDifferGSE(String GSEName, double[][] allGeneExpData, double[] foldChange, int i ,String[] genes, Map<String,Map<String,Double>> allFoldChange) {
         double meanValueOfControl =0.0d;
         double meanValueOfTreatment =0.0d;
         double sumControl = 0;
@@ -157,6 +160,16 @@ public class FindDifferentialExpressedGenes {
 
             //由于RMA归一化之后的数据取了log,因此计算fold-change时，做 anti-log,
             foldChange[i] = Math.pow(2,meanValueOfControl-meanValueOfTreatment);
+
+            //将基因i在 GSE7108实验中的fold-change值保存到allFoldChange中
+            if(!allFoldChange.containsKey(GSEName)){
+                Map<String,Double> map = new HashMap<>();
+                map.put(genes[i],foldChange[i]);
+                allFoldChange.put(GSEName,map);
+            }else {
+                allFoldChange.get(GSEName).put(genes[i],foldChange[i]);
+            }
+
         }else if("GSE8432".equals(GSEName)){
             //GSE8432系列数据涉及到 2 个实验环境：Hw94-1 和 Tw72-1 ，1个 mock infection对照组
             //我使用此数据的方式： Hw94-1环境  VS  mock infection组  、  Tw72-1环境  VS  mock infection组，分别计算fold change值，找差异表达基因
@@ -184,15 +197,33 @@ public class FindDifferentialExpressedGenes {
                 foldChange[i] = foldChangeTw72_1;
             }
 
+            //将两组对比下的 fold-change值都保存到allFoldChange中
+            String hw94_1 = GSEName+"Hw94_1";
+            String tw72_1 = GSEName+"Tw72_1";
+            if(!allFoldChange.containsKey(hw94_1)){
+                Map<String,Double> map = new HashMap<>();
+                map.put(genes[i],foldChangeHw94_1);
+                allFoldChange.put(hw94_1,map);
+            }else {
+                allFoldChange.get(hw94_1).put(genes[i],foldChangeHw94_1);
+            }
+            if(!allFoldChange.containsKey(tw72_1)){
+                Map<String,Double> map = new HashMap<>();
+                map.put(genes[i],foldChangeTw72_1);
+                allFoldChange.put(tw72_1,map);
+            }else {
+                allFoldChange.get(tw72_1).put(genes[i],foldChangeTw72_1);
+            }
+
         }else if("GSE29740".equals(GSEName)){
             //GSE29740 实验设计：1种基因型的大豆：PI462312型；  3个实验条件：剧毒锈病环境、无毒性的锈病环境和mock infection ；  每一个环境下都有3个replications；  在感染后6个时间点取样
             //因此共有 1 * 3 * 3 * 6=54个基因芯片数据。
-            //我使用此数据的方式：Tw90-2(vir)组  VS  mock infection  ，  Hw94-1(avir)组 VS mock infection 组
+            //我使用此数据的方式：Tw80-2(vir)组  VS  mock infection  ，  Hw94-1(avir)组 VS mock infection 组
 
 
 
-            double meanOfTw20 = 0.0d;
-            double meanOfHw94 = 0.0d;
+            double meanOfTw80_2 = 0.0d;
+            double meanOfHw94_1 = 0.0d;
             double meanOfMockInfection=0.0d;
 
             double sumMock =0.0d;
@@ -201,27 +232,45 @@ public class FindDifferentialExpressedGenes {
             }
             meanOfMockInfection = (sumMock)/18;
 
-            double sumTw20 = 0.0d;
+            double sumTw80_2 = 0.0d;
             for(int j=18;j <=35;j++){
-                sumTw20+=allGeneExpData[i][j];
+                sumTw80_2+=allGeneExpData[i][j];
             }
-            meanOfTw20 = sumTw20/18;
+            meanOfTw80_2 = sumTw80_2/18;
 
-            double sumHw94 =0.0d;
+            double sumHw94_1 =0.0d;
             for(int j=36;j <= 53;j++){
-                sumHw94+=allGeneExpData[i][j];
+                sumHw94_1+=allGeneExpData[i][j];
             }
-            meanOfHw94 = sumHw94/18;
+            meanOfHw94_1 = sumHw94_1/18;
 
             //由于RMA归一化之后的数据取了log,因此计算fold-change时，做 anti-log
-            double foldChangeTw20 = Math.pow(2,meanOfTw20 -meanOfMockInfection);
-            double foldChangeHw94 = Math.pow(2,meanOfHw94-meanOfMockInfection);
+            double foldChangeTw80_2 = Math.pow(2,meanOfTw80_2 -meanOfMockInfection);
+            double foldChangeHw94_1 = Math.pow(2,meanOfHw94_1-meanOfMockInfection);
 
             //这两个 fold-change 值有一个在阈值范围内 就把该基因选作差异表达基因
-            if(isDifferExpressed(foldChangeTw20)){
-                foldChange[i] = foldChangeTw20;
+            if(isDifferExpressed(foldChangeTw80_2)){
+                foldChange[i] = foldChangeTw80_2;
             }else{
-                foldChange[i] = foldChangeHw94;
+                foldChange[i] = foldChangeHw94_1;
+            }
+
+            String tw80_2 = GSEName+"Tw80_2";
+            String hw94_1 = GSEName+"Hw94_1";
+            //将2组foldChange值 都保存到allFoldChange中，画heatmap图需要
+            if(!allFoldChange.containsKey(tw80_2)){
+                Map<String,Double> map = new HashMap<>();
+                map.put(genes[i] ,foldChangeTw80_2);
+                allFoldChange.put(tw80_2,map);
+            }else {
+                allFoldChange.get(tw80_2).put(genes[i] ,foldChangeTw80_2);
+            }
+            if(!allFoldChange.containsKey(hw94_1)){
+                Map<String,Double> map = new HashMap<>();
+                map.put(genes[i] ,foldChangeHw94_1);
+                allFoldChange.put(hw94_1,map);
+            }else {
+                allFoldChange.get(hw94_1).put(genes[i] ,foldChangeHw94_1);
             }
 
         }else if("GSE29741".equals(GSEName)){
@@ -268,6 +317,24 @@ public class FindDifferentialExpressedGenes {
                 foldChange[i] = foldChangePI459025Hw94_1;
             }else{
                 foldChange[i] =foldChangeWilliams;
+            }
+
+            //保存2组对比下的foldchange值
+            String pi459025 = GSEName+"PI459025";
+            String williams = GSEName+"Williams";
+            if(!allFoldChange.containsKey(pi459025)){
+                Map<String,Double> map = new HashMap<>();
+                map.put(genes[i] ,foldChangePI459025Hw94_1);
+                allFoldChange.put(pi459025,map);
+            }else {
+                allFoldChange.get(pi459025).put(genes[i],foldChangePI459025Hw94_1);
+            }
+            if(!allFoldChange.containsKey(williams)){
+                Map<String,Double> map = new HashMap<>();
+                map.put(genes[i] ,foldChangeWilliams);
+                allFoldChange.put(williams,map);
+            }else {
+                allFoldChange.get(williams).put(genes[i],foldChangeWilliams);
             }
 
         }else if("GSE33410".equals(GSEName)){
@@ -323,6 +390,23 @@ public class FindDifferentialExpressedGenes {
                 foldChange[i] = foldChangeEmbraph;
             }
 
+            //保存2组对比下的 fold-change值
+            String pi23970 = GSEName+"PI23970";
+            String embraph = GSEName+"Embraph";
+            if(!allFoldChange.containsKey(pi23970)){
+                Map<String,Double> map = new HashMap<>();
+                map.put(genes[i] ,foldChangePI23970);
+                allFoldChange.put(pi23970,map);
+            }else {
+                allFoldChange.get(pi23970).put(genes[i],foldChangePI23970);
+            }
+            if(!allFoldChange.containsKey(embraph)){
+                Map<String,Double> map = new HashMap<>();
+                map.put(genes[i],foldChangeEmbraph);
+                allFoldChange.put(embraph,map);
+            }else {
+                allFoldChange.get(embraph).put(genes[i],foldChangeEmbraph);
+            }
 
         }else if("GSE41724".equals(GSEName)){
             //GSE41724 实验设计：次试验比较简单，只涉及到1种基因型的大豆，2个treatments
@@ -330,6 +414,15 @@ public class FindDifferentialExpressedGenes {
             double meanControl = (allGeneExpData[i][2] + allGeneExpData[i][3] +allGeneExpData[i][4])/3;
 
             foldChange[i] = Math.pow(2,meanTreatment-meanControl);
+
+            //将fold-change值保存到allFoldChange中
+            if(!allFoldChange.containsKey(GSEName)){
+                Map<String,Double> map = new HashMap<>();
+                map.put(genes[i],foldChange[i]);
+                allFoldChange.put(GSEName,map);
+            }else {
+                allFoldChange.get(GSEName).put(genes[i],foldChange[i]);
+            }
         }
 
     }
